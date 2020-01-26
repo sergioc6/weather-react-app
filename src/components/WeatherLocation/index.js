@@ -2,21 +2,8 @@ import React, { Component } from 'react';
 import Location from './Location';
 import WeatherData from './WeatherData';
 import './styles.css';
-import { SUN, WINDY } from './../../constants/weathers';
-
-const data = {
-    temperature: 5,
-    weatherState: SUN,
-    humidity: 10,
-    wind: '10 m/s',
-}
-
-const data2 = {
-    temperature: 14,
-    weatherState: WINDY,
-    humidity: 35,
-    wind: '500 m/s',
-}
+import transformWeather from './../../services/transformWeather';
+import { api_weather } from './../../constants/api_url';
 
 class WeatherLocation extends Component {
     
@@ -24,27 +11,43 @@ class WeatherLocation extends Component {
         super();
         this.state = {
             city: "Buenos Aires",
-            data: data,
+            data: null,
         };
     }
     
+    componentDidMount() {
+        console.log('componentDidMount');
+        this.handleUpdateClick();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        console.log('componentDidUpdate');
+    }
+    
     handleUpdateClick = () => {
-        console.log("actualizado");
-        
-        this.setState({
-            city: "Mexico DC",
-            data: data2,
+        fetch(api_weather).then(res =>{
+            return res.json()
+        }).then( data => {
+            const newWeather = transformWeather(data);
+            console.log(newWeather);
+            this.setState({
+                data: newWeather
+            });
         });
     }
 
     render () {
-    const { city, data} = this.state;
-     return (
-        <div className="weatherLocationCont">
-            <Location city={city}></Location>
-            <WeatherData data={data}></WeatherData>
-            <button onClick={this.handleUpdateClick}>Actualizar</button>
-        </div>
+        console.log('render');
+        const { city, data} = this.state;
+        return (
+            <div className="weatherLocationCont">
+                <Location city={city}></Location>
+                
+                {data ? 
+                    <WeatherData data={data}></WeatherData> : 
+                    "Cargando..."
+                }
+            </div>
      );
     }
 
